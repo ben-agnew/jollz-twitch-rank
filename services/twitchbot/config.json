@@ -1,0 +1,23 @@
+{
+  "cacheUrl": "cache:6379",
+  "valApiUrl": "https://api.henrikdev.xyz/valorant/v2/mmr/na/",
+  "accounts": [
+    {
+      "name": "JOLLZTV",
+      "tag": "6969",
+      "stats": ["rank","elo","rr"],
+      "id": "Main Rank",
+      "command": "!mainrank"
+      
+    },
+    {
+      "name": "BANKAI",
+      "tag": "JOLLZ",
+      "stats": ["rank","elo","rr"],
+      "id": "KNIFE ONLY TO GOLD",
+      "command": "!kniferank"
+      
+    }
+  ]
+
+}

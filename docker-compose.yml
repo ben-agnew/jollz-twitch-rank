@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  cache:
+    image: redis
+  twitchbot:
+    build:
+      context: ./
+      dockerfile: ./services/twitchbot/Dockerfile
+    depends_on:
+      - cache
+
+    environment:
+      - TWITCH_TOKEN=oauth:xxx
+      - TWITCH_USER=xxx
+      - TWITCH_CHANNEL=xxx
