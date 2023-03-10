@@ -66,6 +66,8 @@ func handleMessage(message twitch.PrivateMessage, client *twitch.Client) {
 
 		case "!current":
 			currentCommand(&message, client)
+		case "!bot":
+			botCommand(&message, client)
 		default:
 			checkCommands(&message, client)
 		}
@@ -341,6 +343,10 @@ func checkCommands(message *twitch.PrivateMessage, client *twitch.Client) {
 		}
 
 	}
+}
+
+func botCommand(message *twitch.PrivateMessage, client *twitch.Client) {
+	client.Say(message.Channel, "@"+message.User.DisplayName+": Hello")
 }
 
 // check if user is mod or broadcaster
