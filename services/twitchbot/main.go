@@ -68,6 +68,8 @@ func handleMessage(message twitch.PrivateMessage, client *twitch.Client) {
 			currentCommand(&message, client)
 		case "!bot":
 			botCommand(&message, client)
+		case "!meow":
+			meowCommand(&message, client)
 		default:
 			checkCommands(&message, client)
 		}
@@ -83,6 +85,7 @@ type CachedChannel struct {
 	Change       int    `json:"change"`
 	RR           int    `json:"rr"`
 	WinRate      string `json:"winrate"`
+	Kills        string `json:"kills"`
 	AccountIndex int    `json:"account_index"`
 }
 
@@ -105,7 +108,7 @@ func rankCommand(message *twitch.PrivateMessage, client *twitch.Client) {
 			return
 		}
 
-		replyStr, err := GetRankString(cachedObj.Name, cachedObj.Tag, cachedObj.Rank, cachedObj.Elo, cachedObj.Change, cachedObj.RR, cachedObj.WinRate, configuration.Accounts[cachedObj.AccountIndex])
+		replyStr, err := GetRankString(cachedObj.Name, cachedObj.Tag, cachedObj.Rank, cachedObj.Elo, cachedObj.Change, cachedObj.RR, cachedObj.WinRate, cachedObj.Kills, configuration.Accounts[cachedObj.AccountIndex])
 		if err != nil {
 			client.Say(message.Channel, "Error getting rank")
 			return
@@ -130,6 +133,7 @@ func rankCommand(message *twitch.PrivateMessage, client *twitch.Client) {
 			Change:       data.Change,
 			RR:           data.RR,
 			WinRate:      data.WinRate,
+			Kills:        data.Kills,
 			AccountIndex: currentAccountIndex,
 		}
 		cachedStr, err := json.Marshal(cachedObj)
@@ -141,7 +145,7 @@ func rankCommand(message *twitch.PrivateMessage, client *twitch.Client) {
 			log.WithField("event", "user_command_cache_set").Error(err)
 		}
 
-		replyStr, err := GetRankString(data.Name, data.Tag, data.Rank, data.Elo, data.Change, data.RR, data.WinRate, configuration.Accounts[currentAccountIndex])
+		replyStr, err := GetRankString(data.Name, data.Tag, data.Rank, data.Elo, data.Change, data.RR, data.WinRate, data.Kills, configuration.Accounts[currentAccountIndex])
 		if err != nil {
 			client.Say(message.Channel, "Error getting rank")
 			return
@@ -299,13 +303,15 @@ func checkCommands(message *twitch.PrivateMessage, client *twitch.Client) {
 
 					// cache for 1 minute
 					cachedObj := CachedChannel{
-						Name:         data.Name,
-						Tag:          data.Tag,
-						Rank:         data.Rank,
-						Elo:          data.Elo,
-						Change:       data.Change,
-						RR:           data.RR,
-						WinRate:      data.WinRate,
+						Name:    data.Name,
+						Tag:     data.Tag,
+						Rank:    data.Rank,
+						Elo:     data.Elo,
+						Change:  data.Change,
+						RR:      data.RR,
+						WinRate: data.WinRate,
+						Kills:   data.Kills,
+
 						AccountIndex: getCurrentIndex(account.Name + "/" + account.Tag),
 					}
 					cachedStr, err := json.Marshal(cachedObj)
@@ -317,7 +323,7 @@ func checkCommands(message *twitch.PrivateMessage, client *twitch.Client) {
 						log.WithField("event", "user_command_cache_set").Error(err)
 					}
 
-					replyStr, err := GetRankString(data.Name, data.Tag, data.Rank, data.Elo, data.Change, data.RR, data.WinRate, account)
+					replyStr, err := GetRankString(data.Name, data.Tag, data.Rank, data.Elo, data.Change, data.RR, data.WinRate, data.Kills, account)
 					if err != nil {
 						client.Say(message.Channel, "Error getting rank")
 						return
@@ -330,7 +336,7 @@ func checkCommands(message *twitch.PrivateMessage, client *twitch.Client) {
 					if err != nil {
 						log.WithField("event", "user_command_cache_set").Error(err)
 					}
-					replyStr, err := GetRankString(cachedObj.Name, cachedObj.Tag, cachedObj.Rank, cachedObj.Elo, cachedObj.Change, cachedObj.RR, cachedObj.WinRate, account)
+					replyStr, err := GetRankString(cachedObj.Name, cachedObj.Tag, cachedObj.Rank, cachedObj.Elo, cachedObj.Change, cachedObj.RR, cachedObj.WinRate, cachedObj.Kills, account)
 					if err != nil {
 						client.Say(message.Channel, "Error getting rank")
 						return
@@ -347,6 +353,10 @@ func checkCommands(message *twitch.PrivateMessage, client *twitch.Client) {
 
 func botCommand(message *twitch.PrivateMessage, client *twitch.Client) {
 	client.Say(message.Channel, "@"+message.User.DisplayName+": Hello")
+}
+
+func meowCommand(message *twitch.PrivateMessage, client *twitch.Client) {
+	client.Say(message.Channel, "Meow")
 }
 
 // check if user is mod or broadcaster

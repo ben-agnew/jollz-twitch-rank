@@ -15,4 +15,5 @@ type Configuration struct {
 	CacheUrl       string    `json:"cacheUrl"`
 	Accounts       []Account `json:"accounts"`
 	ValApiURL      string    `json:"valApiUrl"`
+	TrackerURL     string    `json:"trackerUrl"`
 }

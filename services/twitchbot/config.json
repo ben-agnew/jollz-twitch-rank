@@ -1,21 +1,27 @@
 {
   "cacheUrl": "cache:6379",
   "valApiUrl": "https://api.henrikdev.xyz/valorant/v2/mmr/na/",
+  "trackerUrl": "https://tracker.gg/valorant/profile/riot/",
   "accounts": [
     {
       "name": "JOLLZTV",
       "tag": "6969",
       "stats": ["rank","elo","rr"],
       "id": "Main Rank",
-      "command": "!mainrank"
+      "command": "!mainrank",
+      "winoffset": 0,
+      "lossoffset": 0
+      
       
     },
     {
       "name": "BANKAI",
       "tag": "JOLLZ",
-      "stats": ["rank","elo","rr"],
+      "stats": ["rank","elo","rr","winrate","kills"],
       "id": "KNIFE ONLY TO GOLD",
-      "command": "!kniferank"
+      "command": "!kniferank",
+      "winoffset": 0,
+      "lossoffset": 0
       
     }
   ]

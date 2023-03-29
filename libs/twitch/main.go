@@ -8,6 +8,7 @@ type RankData struct {
 	Change  int    `json:"change"`
 	RR      int    `json:"rr"`
 	WinRate string `json:"winrate"`
+	Kills   string `json:"kills"`
 }
 
 type GetRankResponse struct {
@@ -52,4 +53,33 @@ type Season struct {
 	Wins  int    `json:"wins"`
 	Games int    `json:"number_of_games"`
 	Error string `json:"error"`
+}
+
+type GetTrackerNetResponse struct {
+	Stats TrackerStats `json:"stats"`
+}
+
+type TrackerData struct {
+	Stats TrackerStats `json:"stats"`
+}
+
+type TrackerStats struct {
+	Profiles []Profile `json:"standardProfiles"`
+}
+
+type Profile struct {
+	Segments []Segment `json:"segments"`
+}
+
+type Segment struct {
+	Stats Stats `json:"stats"`
+}
+
+type Stats struct {
+	Kills Kills `json:"kills"`
+}
+
+type Kills struct {
+	DisplayValue string `json:"displayValue"`
+	Value        int    `json:"value"`
 }

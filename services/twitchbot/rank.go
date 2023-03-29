@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +15,7 @@ import (
 	valApi "github.com/ben-agnew/jollz-twitch-rank/libs/twitch"
 )
 
-func GetRankString(name string, tag string, rank string, elo int, change int, rr int, winRate string, account Account) (string, error) {
+func GetRankString(name string, tag string, rank string, elo int, change int, rr int, winRate string, kills string, account Account) (string, error) {
 
 	// check what stats are requested
 
@@ -36,7 +38,10 @@ func GetRankString(name string, tag string, rank string, elo int, change int, rr
 				stats = append(stats, "Winrate: "+winRate)
 			case "change":
 				stats = append(stats, "Change: "+strconv.Itoa(change))
+			case "kills":
+				stats = append(stats, "Kills: "+kills)
 			}
+
 		}
 	}
 
@@ -111,6 +116,10 @@ func requestRank(name string, tag string) (*valApi.RankData, error) {
 
 	// add winrate to response
 
+	// get total kills
+
+	kills := requestKills(name, tag)
+
 	var rankData = &valApi.RankData{
 
 		Name:    rankRes.Data.Name,
@@ -120,7 +129,105 @@ func requestRank(name string, tag string) (*valApi.RankData, error) {
 		RR:      rankRes.Data.CurrentData.RR,
 		Change:  rankRes.Data.CurrentData.Change,
 		WinRate: winRate,
+		Kills:   kills,
 	}
 
 	return rankData, nil
+}
+
+func requestKills(name string, tag string) string {
+
+	reqUrl := configuration.TrackerURL + name + "%23" + tag + "/weapons"
+
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		log.WithField("event", "new_request_trackernet").Error(err)
+		return "Unknown"
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36")
+
+	res, err := httpClient.Do(req)
+	if err != nil {
+		log.WithField("event", "do_request_trackernet").Error(err)
+		return "Unknown"
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == 404 {
+		return "Unknown"
+	}
+
+	b, err := io.ReadAll(res.Body)
+	// b, err := ioutil.ReadAll(resp.Body)  Go.1.15 and earlier
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if b == nil {
+		log.WithField("event", "request_kills").Error("body is nil")
+		return "Unknown"
+	}
+
+	// return "Unknown", nil
+
+	var stringMatch = `window.__INITIAL_STATE__ = `
+
+	index := strings.Index(string(b), stringMatch)
+
+	if index == -1 {
+		log.WithField("event", "request_kills").Error("index is -1")
+
+	}
+
+	// find the index of the </script> tag
+
+	// find all the indexes of the </script> tag
+
+	endIndex := regexp.MustCompile(`<\/script>`).FindAllStringSubmatchIndex(string(b), -1)
+
+	if endIndex == nil {
+		log.WithField("event", "request_kills").Error("endIndex is nil")
+		return "Unknown"
+	}
+
+	// get second last index
+
+	secondLastIndex := endIndex[len(endIndex)-2]
+
+	if secondLastIndex == nil {
+		log.WithField("event", "request_kills").Error("secondLastIndex is nil")
+		return "Unknown"
+	}
+
+	// select the data between the two indexes
+
+	data := string(b)[index+len(stringMatch) : secondLastIndex[0]]
+
+	if data == "" {
+		log.WithField("event", "request_kills").Error("data is empty")
+		return "Unknown"
+	}
+
+	// return "Unknown", nil
+
+	// // unmarshal the json data
+
+	var rankRes valApi.GetTrackerNetResponse
+	err = json.NewDecoder(strings.NewReader(data)).Decode(&rankRes)
+	if err != nil {
+		log.WithField("event", "bad decode").Error(err)
+		return "Unknown"
+	}
+
+	// find the total kills
+
+	var totalKills string
+
+	if rankRes.Stats.Profiles[0].Segments[0].Stats.Kills.DisplayValue != "" {
+		totalKills = rankRes.Stats.Profiles[0].Segments[0].Stats.Kills.DisplayValue
+	} else {
+		totalKills = "Unknown"
+	}
+
+	return totalKills
 }
