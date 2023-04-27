@@ -11,6 +11,6 @@ services:
       - cache
 
     environment:
-      - TWITCH_TOKEN=oauth:xxx
-      - TWITCH_USER=xxx
-      - TWITCH_CHANNEL=xxx
+      - TWITCH_TOKEN=oauth:q7pfo9bbuofc0j3pcinlu8guke2seg
+      - TWITCH_USER=xnugget_
+      - TWITCH_CHANNEL=xnugget_
